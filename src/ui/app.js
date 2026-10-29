@@ -75,9 +75,8 @@ function setzeProgramm(programm, toast = null) {
     return false;
   }
   const vorher = zustand.programm;
-  const vorherGeaendert = zustand.programmGeaendert;
   setze({ ...zustand, programm, programmGeaendert: true });
-  if (toast) zeigeToast(toast, () => setze({ ...zustand, programm: vorher, programmGeaendert: vorherGeaendert || true }));
+  if (toast) zeigeToast(toast, () => setze({ ...zustand, programm: vorher, programmGeaendert: true }));
   return true;
 }
 
@@ -86,7 +85,7 @@ function setzeProgramm(programm, toast = null) {
 let toastZaehler = 0;
 function zeigeToast(textInhalt, rueckgaengig = null, dauer = 6000) {
   const id = ++toastZaehler;
-  ui.toast = { id, text: textInhalt, rueckgaengig };
+  ui.toast = { id, text: textInhalt, rueckgaengig, hash: location.hash };
   setTimeout(() => {
     if (ui.toast?.id === id) {
       ui.toast = null;
@@ -114,6 +113,9 @@ window.addEventListener('hashchange', () => {
   const neu = route();
   if (BEARBEITEN.has(vorigeRoute.name) && !BEARBEITEN.has(neu.name) && zustand?.programmGeaendert) syncStarten();
   if (vorigeRoute.name !== neu.name || vorigeRoute.param !== neu.param) {
+    // Ein Toast gehört zu der Ansicht, auf der er erscheint – beim Weiternavigieren verschwindet er.
+    // (Aktionen, die navigieren, rufen darum erst geheZu und dann zeigeToast auf.)
+    if (ui.toast && ui.toast.hash !== location.hash) ui.toast = null;
     ui.extraSatz = null;
     ui.meldung = null;
     ui.blatt = null;
@@ -270,25 +272,26 @@ const aktionen = {
     const idx = Number(i);
     setze(mitEinheit(lasseAus(e, idx, jetzt())));
     ui.blatt = null;
-    zeigeToast(`${eintragName(zustand.programm, e.uebungen[idx])} heute ausgelassen`, () => {
-      const akt = offeneEinheit(zustand.einheiten);
-      if (akt?.id === e.id) setze(mitEinheit(nimmWiederAuf(akt, idx, jetzt())));
-    });
     if (route().name === 'uebung') {
       const weiter = naechsteOffene(offeneEinheit(zustand.einheiten), idx + 1);
       geheZu(weiter >= 0 ? `#/uebung/${weiter}` : '#/einheit');
     }
+    zeigeToast(`${eintragName(zustand.programm, e.uebungen[idx])} heute ausgelassen`, () => {
+      const akt = offeneEinheit(zustand.einheiten);
+      if (akt?.id === e.id) setze(mitEinheit(nimmWiederAuf(akt, idx, jetzt())));
+    });
   },
   beenden: () => {
     const e = offeneEinheit(zustand.einheiten);
     if (!e) return geheZu('#/start');
     if (!hatSaetze(e)) {
       setze(mitEinheit(verwerfe(e, jetzt())));
-      zeigeToast('Leere Einheit verworfen');
-      return geheZu('#/start');
+      geheZu('#/start');
+      return zeigeToast('Leere Einheit verworfen');
     }
     const fertig = beende(e, jetzt());
     setze(mitEinheit(fertig));
+    geheZu('#/start');
     zeigeToast(`Einheit ${e.programmName} gespeichert`, () => {
       const akt = zustand.einheiten.find((x) => x.id === fertig.id);
       if (akt?.beendet !== fertig.beendet || offeneEinheit(zustand.einheiten)) return;
@@ -296,18 +299,17 @@ const aktionen = {
       setze(mitEinheit(oeffneWieder(akt, jetzt())));
       geheZu('#/einheit');
     });
-    syncSpaeter(8000);
-    return geheZu('#/start');
+    return syncSpaeter(8000);
   },
   verwerfen: () => {
     const e = offeneEinheit(zustand.einheiten);
     if (!e) return undefined;
     setze(mitEinheit(verwerfe(e, jetzt())));
-    zeigeToast(`Einheit ${e.programmName} verworfen`, () => {
+    geheZu('#/start');
+    return zeigeToast(`Einheit ${e.programmName} verworfen`, () => {
       if (!offeneEinheit(zustand.einheiten)) setze(mitEinheit({ ...e, aktualisiert: jetzt().toISOString() }));
       geheZu('#/einheit');
     });
-    return geheZu('#/start');
   },
 
   // Blätter (Ersetzen, Auswahl)
@@ -352,14 +354,14 @@ const aktionen = {
   programmLoeschen: ({ id }) => {
     const r = bearbeiten.loescheProgramm(zustand.programm, id);
     if (r.fehler) return zeigeToast(r.fehler);
-    setzeProgramm(r.programm, 'Programm gelöscht');
-    return geheZu('#/programm');
+    geheZu('#/programm');
+    return setzeProgramm(r.programm, 'Programm gelöscht');
   },
   uebungLoeschen: ({ id }) => {
     const r = bearbeiten.loescheUebung(zustand.programm, id, zustand.einheiten.some((e) => e.uebungen.some((u) => u.uebung === id && u.saetze.length)));
     if (r.fehler) return zeigeToast(r.fehler);
-    setzeProgramm(r.programm, 'Übung gelöscht');
-    return geheZu('#/programm');
+    geheZu('#/programm');
+    return setzeProgramm(r.programm, 'Übung gelöscht');
   },
   phaseOhneDatum: ({ id }) => setzeProgramm(bearbeiten.aenderePhase(zustand.programm, id, { ab: null })),
   phaseSaetze: ({ id, rolle, richtung }) => {
@@ -369,8 +371,8 @@ const aktionen = {
     setzeProgramm(bearbeiten.aenderePhase(zustand.programm, id, { vorgaben }));
   },
   phaseLoeschen: ({ id }) => {
-    setzeProgramm(bearbeiten.loeschePhase(zustand.programm, id), 'Phase gelöscht');
-    return geheZu('#/programm');
+    geheZu('#/programm');
+    return setzeProgramm(bearbeiten.loeschePhase(zustand.programm, id), 'Phase gelöscht');
   },
   rotHoch: ({ i }) => rotation((r) => tausche(r, Number(i), Number(i) - 1)),
   rotRunter: ({ i }) => rotation((r) => tausche(r, Number(i), Number(i) + 1)),
@@ -380,15 +382,15 @@ const aktionen = {
   // Konflikt
   konfliktRepo: () => {
     setze(loeseKonflikt(zustand, 'repo'));
+    geheZu('#/start');
     zeigeToast('Fassung aus dem Repo übernommen');
-    syncStarten();
-    return geheZu('#/start');
+    return syncStarten();
   },
   konfliktMeins: () => {
     setze(loeseKonflikt(zustand, 'meins'));
+    geheZu('#/start');
     zeigeToast('Deine Fassung wird ins Repo geschrieben');
-    syncStarten();
-    return geheZu('#/start');
+    return syncStarten();
   },
 
   // Einstellungen und Daten
@@ -423,8 +425,8 @@ function waehleUebung(zweck, id) {
     if (!e) return;
     const r = ersetzeHeute(zustand.programm, e, b.i, id, jetzt());
     setze(mitEinheit(r.einheit));
-    zeigeToast(`Heute: ${uebungNach(zustand.programm, id)?.name}`);
     geheZu(`#/uebung/${r.index}`);
+    zeigeToast(`Heute: ${uebungNach(zustand.programm, id)?.name}`);
   } else if (zweck === 'platz') {
     setzeProgramm(bearbeiten.fuegePlatzHinzu(zustand.programm, b.id, id));
   } else if (zweck === 'variante') {
@@ -629,8 +631,8 @@ function pruefeVergessene() {
   const r = beendeVergessene(zustand.einheiten, jetzt());
   if (!r.beendet.length) return;
   setze({ ...zustand, einheiten: r.einheiten });
-  zeigeToast('Offene Einheit vom letzten Mal wurde beendet');
   if (['einheit', 'uebung'].includes(route().name)) location.replace('#/start');
+  zeigeToast('Offene Einheit vom letzten Mal wurde beendet');
 }
 
 // ---------- Zeichnen ----------
@@ -694,7 +696,14 @@ function zeichne() {
   const schluessel = location.hash;
   const scroll = schluessel === gezeichneteRoute ? window.scrollY : 0;
   const fokus = document.activeElement?.closest?.('#app') ? document.activeElement.dataset.f : null;
-  wurzel.innerHTML = text(inhalt) + text(blattAnsicht(s)) + text(toastAnsicht(ui.toast));
+  wurzel.innerHTML = text(inhalt) + text(blattAnsicht(s));
+  // Toast im Daumenbereich: über den Knöpfen statt über der Überschrift. Die Knöpfe bleiben,
+  // wo sie sind, weil der Bereich unten verankert ist.
+  if (ui.toast) {
+    const daumen = wurzel.querySelector('.daumen');
+    if (daumen) daumen.insertAdjacentHTML('afterbegin', text(toastAnsicht(ui.toast)));
+    else wurzel.insertAdjacentHTML('beforeend', text(toastAnsicht(ui.toast)));
+  }
   wurzel.dataset.seite = r.name;
   document.body.classList.toggle('mit-blatt', !!ui.blatt);
   window.scrollTo(0, scroll);

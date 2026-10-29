@@ -339,6 +339,7 @@ fieldset.spanne label { margin: 4px 0 0; }
 .varianten-liste li { display: flex; align-items: center; justify-content: space-between; min-height: 44px; }
 .varianten-liste a { flex: 1; display: flex; align-items: center; min-width: 44px; min-height: 44px; color: var(--tinte); }
 .platz-knoepfe { display: flex; flex-wrap: wrap; gap: 8px; padding-left: 34px; }
+.platz-knoepfe .knopf { white-space: nowrap; padding: 0 12px; }
 .platz-knoepfe .knopf:first-child { flex: 1; }
 
 details.archiv summary { display: inline-flex; list-style: none; margin-top: 8px; }
@@ -372,7 +373,7 @@ body.mit-blatt { overflow: hidden; }
 .toast {
   position: fixed;
   left: 50%;
-  top: calc(env(safe-area-inset-top) + 58px);
+  bottom: calc(env(safe-area-inset-bottom) + 12px);
   transform: translateX(-50%);
   width: min(528px, calc(100% - 24px));
   z-index: 20;
@@ -388,10 +389,11 @@ body.mit-blatt { overflow: hidden; }
   font-weight: 600;
   box-shadow: 0 8px 24px var(--schatten);
 }
+.daumen .toast { position: static; transform: none; width: auto; box-shadow: none; }
 .toast-knopf { color: var(--papier); text-decoration: underline; }
 .toast-knopf:active { background: transparent; color: var(--papier); opacity: 0.7; }
 
 @media (prefers-reduced-motion: no-preference) {
-  .toast { animation: rein 0.16s ease-out; }
-  @keyframes rein { from { opacity: 0; transform: translate(-50%, -6px); } }
+  .daumen .toast { animation: rein 0.14s ease-out; }
+  @keyframes rein { from { opacity: 0.4; } }
 }

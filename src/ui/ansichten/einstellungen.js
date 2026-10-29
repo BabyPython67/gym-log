@@ -26,10 +26,8 @@ export function einstellungenAnsicht(s) {
         <label>Branch (leer = Standard-Branch) <input name="branch" value="${e.branch}" spellcheck="false" autocapitalize="off"></label>
         <button class="knopf haupt">Speichern und synchronisieren</button>
       </form>
-      <div class="reihe">
-        <button class="knopf zweit" data-a="jetztSync" ${e.token && !ui.sync.laeuft ? '' : html`disabled`}>Jetzt synchronisieren</button>
-        <button class="knopf zweit" data-a="tokenEntfernen" ${e.token ? '' : html`disabled`}>Token entfernen</button>
-      </div>
+      <button class="knopf zweit breit" data-a="jetztSync" ${e.token && !ui.sync.laeuft ? '' : html`disabled`}>Jetzt synchronisieren</button>
+      <button class="knopf zweit breit" data-a="tokenEntfernen" ${e.token ? '' : html`disabled`}>Token entfernen</button>
       <p class="leise">Der Token bleibt nur auf diesem Gerät. Er steht nicht im Export und wird nur an api.github.com geschickt.</p>
     </section>
     <section class="abschnitt">
