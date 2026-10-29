@@ -210,7 +210,7 @@ test('k) Programm in der App bearbeiten und neues Programm anlegen landet in pro
   mock.schreibe({ 'garmin/stand.md': 'x\n' });
   const zustand = await imRepoSynchronisiert(mock, neuerZustand(P));
   const { seite, kontext, fehler } = await neueSeite({ zustand, einstellungen: TOKEN_EINSTELLUNGEN, mock, zeit: '2026-11-05T18:00:00' });
-  await seite.waitForSelector('[data-testid="sync-zeile"]:text("Gesichert")');
+  await seite.waitForSelector('[data-testid="sync-zeile"]:text-matches("^Gesichert")');
   const basis = seite.url().split('#')[0];
 
   // Reihenfolge in A ändern: Bankdrücken eins nach unten

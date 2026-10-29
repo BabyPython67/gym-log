@@ -7,9 +7,12 @@
 
 export function meldeServiceWorkerAn() {
   if (!('serviceWorker' in navigator)) return;
-  const hatteSteuerung = !!navigator.serviceWorker.controller;
+  // Beim allerersten Start übernimmt der Worker nur – dann kein Neuladen nötig.
+  let bisher = navigator.serviceWorker.controller;
   let neuGeladen = false;
   navigator.serviceWorker.addEventListener('controllerchange', () => {
+    const hatteSteuerung = !!bisher;
+    bisher = navigator.serviceWorker.controller;
     if (!hatteSteuerung || neuGeladen) return;
     neuGeladen = true;
     location.reload();
