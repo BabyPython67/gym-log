@@ -18,7 +18,7 @@ export function einstellungenAnsicht(s) {
       ${z.sync.letzterErfolg ? html`<p class="leise">Zuletzt erfolgreich: ${zeitpunktText(z.sync.letzterErfolg)}</p>` : ''}
       <form class="formular" data-form="einstellungen" autocomplete="off">
         <label>Token (fine-grained, nur für das Daten-Repo)
-          <input name="token" type="password" value="${e.token ? '••••••••' : ''}" data-gesetzt="${e.token ? 'ja' : 'nein'}" placeholder="github_pat_…" autocomplete="off" spellcheck="false"></label>
+          <input name="token" type="password" value="${e.token ? '••••••••' : ''}" data-gesetzt="${e.token ? 'ja' : 'nein'}" placeholder="Token hier einfügen" autocomplete="off" spellcheck="false"></label>
         <label>Token gültig bis (für die Erinnerung)
           <input name="tokenBis" type="date" value="${e.tokenBis}"></label>
         <label>Repo <input name="repo" value="${e.repo}" spellcheck="false" autocapitalize="off"></label>

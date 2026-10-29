@@ -7,7 +7,7 @@
 //
 // Anfragen an andere Adressen (api.github.com) fasst der Worker nicht an.
 
-const VERSION = 'b2b7dfc9ac';
+const VERSION = '579f905c8b';
 const CACHE = `gym-log-${VERSION}`;
 const DATEIEN = [
   './',

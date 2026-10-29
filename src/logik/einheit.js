@@ -82,7 +82,7 @@ function phaseDer(programm, einheit) {
   return programm.phasen.find((p) => p.id === einheit.phase) ?? aktivePhase(programm, einheit.datum);
 }
 
-// Variante wechseln (z. B. Latzug → Klimmzüge). Nur solange noch kein Satz eingetragen ist.
+// Variante wechseln (eine andere Übung desselben Platzes). Nur solange noch kein Satz eingetragen ist.
 export function waehleVariante(programm, einheit, i, uebungId, jetzt) {
   const alt = einheit.uebungen[i];
   if (alt.saetze.length || !alt.varianten.includes(uebungId)) return einheit;

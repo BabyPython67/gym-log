@@ -1,2 +1,2 @@
 // Von scripts/version.mjs erzeugt – nicht von Hand ändern.
-export const VERSION = 'b2b7dfc9ac';
+export const VERSION = '579f905c8b';

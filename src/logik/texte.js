@@ -8,7 +8,7 @@ function anzeigeName(programm, uebungId, schnappschuss) {
   return uebungNach(programm, uebungId)?.name ?? schnappschuss ?? uebungId;
 }
 
-// „2026-10-29 · A · Goblet Squat 16 kg: 10, 10 · Bankdrücken 40 kg: 8, 8 · Plank ausgelassen“
+// „JJJJ-MM-TT · Programm · Übung 16 kg: 10, 10 · Übung: 45 s, 40 s · Übung ausgelassen“
 export function einheitAlsZeile(programm, einheit) {
   const teile = [einheit.datum, einheit.programmName ?? einheit.programm];
   for (const u of einheit.uebungen) {
