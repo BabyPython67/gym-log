@@ -1,0 +1,17 @@
+{
+  "name": "gym-log",
+  "private": true,
+  "description": "Satz-Log fürs Krafttraining – offline, einhändig, Sync nach GitHub",
+  "type": "module",
+  "scripts": {
+    "start": "node scripts/server.mjs",
+    "test": "npm run test:logik && npm run test:ui",
+    "test:logik": "TZ=Europe/Berlin node --test \"tests/logik/*.test.mjs\"",
+    "test:ui": "TZ=Europe/Berlin node --test --test-concurrency=1 \"tests/ui/*.test.mjs\"",
+    "version": "node scripts/version.mjs",
+    "screenshots": "TZ=Europe/Berlin node tests/ui/screenshots.mjs"
+  },
+  "devDependencies": {
+    "playwright": "1.63.0"
+  }
+}

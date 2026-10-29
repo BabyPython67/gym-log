@@ -1,0 +1,96 @@
+{
+  "format": 1,
+  "rollen": {
+    "grund": "Grundübung",
+    "zusatz": "Ergänzung"
+  },
+  "uebungen": [
+    { "id": "goblet-squat", "name": "Goblet Squat", "messart": "gewicht_wdh", "spanne": [6, 10], "schritt": 2, "rolle": "grund" },
+    { "id": "langhantel-kniebeuge", "name": "Langhantel-Kniebeuge", "messart": "gewicht_wdh", "spanne": [6, 10], "schritt": 2.5, "rolle": "grund" },
+    { "id": "bankdruecken", "name": "Bankdrücken", "messart": "gewicht_wdh", "spanne": [6, 10], "schritt": 2.5, "rolle": "grund" },
+    { "id": "rudern", "name": "Rudern", "messart": "gewicht_wdh", "spanne": [6, 10], "schritt": 2.5, "rolle": "grund" },
+    { "id": "rumaenisches-kreuzheben", "name": "Rumänisches Kreuzheben", "messart": "gewicht_wdh", "spanne": [6, 10], "schritt": 2.5, "rolle": "grund" },
+    { "id": "aussenrotation-kabel", "name": "Außenrotation am Kabel", "messart": "gewicht_wdh", "spanne": [10, 15], "schritt": 1.25, "rolle": "zusatz", "hinweis": "Wdh. je Arm" },
+    { "id": "plank", "name": "Plank", "messart": "zeit", "spanne": [30, 45], "schritt": null, "rolle": "zusatz" },
+    { "id": "beinpresse", "name": "Beinpresse", "messart": "gewicht_wdh", "spanne": [6, 10], "schritt": 5, "rolle": "grund" },
+    { "id": "trap-bar-kreuzheben", "name": "Trap-Bar-Kreuzheben", "messart": "gewicht_wdh", "spanne": [6, 10], "schritt": 5, "rolle": "grund" },
+    { "id": "schulterdruecken", "name": "Schulterdrücken", "messart": "gewicht_wdh", "spanne": [6, 10], "schritt": 2, "rolle": "grund", "hinweis": "Kurzhanteln, Gewicht je Hand" },
+    { "id": "latzug", "name": "Latzug", "messart": "gewicht_wdh", "spanne": [6, 10], "schritt": 2.5, "rolle": "grund" },
+    { "id": "klimmzuege", "name": "Klimmzüge", "messart": "wdh", "spanne": [6, 10], "schritt": null, "rolle": "grund" },
+    { "id": "bulgarische-split-squats", "name": "Bulgarische Split Squats", "messart": "gewicht_wdh", "spanne": [10, 15], "schritt": 2, "rolle": "zusatz", "hinweis": "Gewicht je Hand, Wdh. je Bein" },
+    { "id": "wadenheben", "name": "Wadenheben", "messart": "gewicht_wdh", "spanne": [10, 15], "schritt": 5, "rolle": "zusatz" },
+    { "id": "pallof-press", "name": "Pallof Press", "messart": "gewicht_wdh", "spanne": [10, 15], "schritt": 2.5, "rolle": "zusatz", "hinweis": "Wdh. je Seite" }
+  ],
+  "programme": [
+    {
+      "id": "a",
+      "name": "A",
+      "titel": "Ganzkörper A",
+      "plaetze": [
+        { "name": "Kniebeuge", "varianten": ["goblet-squat", "langhantel-kniebeuge"] },
+        { "varianten": ["bankdruecken"] },
+        { "varianten": ["rudern"] },
+        { "varianten": ["rumaenisches-kreuzheben"] },
+        { "varianten": ["aussenrotation-kabel"] },
+        { "varianten": ["plank"] }
+      ]
+    },
+    {
+      "id": "b",
+      "name": "B",
+      "titel": "Ganzkörper B",
+      "plaetze": [
+        { "name": "Beinpresse oder Trap-Bar", "varianten": ["beinpresse", "trap-bar-kreuzheben"] },
+        { "varianten": ["schulterdruecken"] },
+        { "name": "Latzug oder Klimmzüge", "varianten": ["latzug", "klimmzuege"] },
+        { "varianten": ["bulgarische-split-squats"] },
+        { "varianten": ["wadenheben"] },
+        { "varianten": ["pallof-press"] }
+      ]
+    },
+    {
+      "id": "a-kurz",
+      "name": "A kurz",
+      "titel": "Klausurwoche: erste drei Übungen von A",
+      "zaehltAls": "a",
+      "auszug": { "programm": "a", "anzahl": 3 }
+    },
+    {
+      "id": "b-kurz",
+      "name": "B kurz",
+      "titel": "Klausurwoche: erste drei Übungen von B",
+      "zaehltAls": "b",
+      "auszug": { "programm": "b", "anzahl": 3 }
+    }
+  ],
+  "rotation": ["a", "b"],
+  "phasen": [
+    {
+      "id": "einstieg",
+      "name": "Einstieg",
+      "ab": "2026-10-29",
+      "vorgaben": {
+        "grund": { "saetze": 2, "reserve": "3" },
+        "zusatz": { "saetze": 2, "reserve": "3" }
+      }
+    },
+    {
+      "id": "aufbau",
+      "name": "Aufbau",
+      "ab": "2026-11-09",
+      "vorgaben": {
+        "grund": { "saetze": 3, "reserve": "2" },
+        "zusatz": { "saetze": 3, "reserve": "2" }
+      }
+    },
+    {
+      "id": "steigern",
+      "name": "Steigern",
+      "ab": null,
+      "vorgaben": {
+        "grund": { "saetze": 3, "reserve": "1–2" },
+        "zusatz": { "saetze": 3, "reserve": "2" }
+      }
+    }
+  ]
+}
