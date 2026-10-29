@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 
 import { aendereUebung, entfernePlatz, loescheUebung, neuesProgramm, fuegePlatzHinzu, setzeRotation } from '../../src/logik/bearbeiten.js';
-import { aendereSatz, beende, beendeVergessene, ersetzeHeute, lasseAus, loescheSatz, fuegeSatzEin, naechsteOffene, speichereSatz, starteEinheit, waehleVariante } from '../../src/logik/einheit.js';
+import { aendereSatz, beende, beendeVergessene, ersetzeHeute, lasseAus, loescheSatz, fuegeSatzEin, naechsteOffene, speichereSatz, starteEinheit, verwerfe, waehleVariante } from '../../src/logik/einheit.js';
 import { exportCsv, exportJson } from '../../src/logik/export.js';
 import { messart, satzVollstaendig } from '../../src/logik/messarten.js';
 import { aktivePhase, mitNeuerUebung, naechstesProgramm, plaetzeVon, pruefeProgramm, sichereHistorie, uebungNach } from '../../src/logik/programm.js';
@@ -52,6 +52,20 @@ test('c) Messarten ohne Gewicht bekommen keinen Vorschlag, nur den letzten Wert'
   assert.equal(gewichtsVorschlag(u('plank'), letzteWerte([e], 'plank')), null);
   assert.deepEqual(letzteWerte([e], 'plank').saetze.map((s) => s.s), [45, 40]);
   assert.equal(gewichtsVorschlag(u('klimmzuege'), null), null);
+});
+
+// ---------- b) Werte vom letzten Mal ----------
+
+test('b) „letztes Mal“ ist die neueste Einheit mit Sätzen genau dieser Übung; laufende und verworfene zählen nicht', () => {
+  const alt = einheitMit(P, 'a', '2026-10-29', { bankdruecken: [{ kg: 40, wdh: 10 }] });
+  const neu = einheitMit(P, 'a', '2026-11-05', { bankdruecken: [{ kg: 42.5, wdh: 8 }, { kg: 42.5, wdh: 7 }] }, [alt]);
+  const ohne = einheitMit(P, 'b', '2026-11-09', { latzug: [{ kg: 35, wdh: 9 }] }, [alt, neu]);
+  const verworfen = verwerfe(einheitMit(P, 'a', '2026-11-12', { bankdruecken: [{ kg: 50, wdh: 1 }] }), am('2026-11-12', '19:30'));
+  const laufend = speichereSatz(starteEinheit(P, 'a', [], am('2026-11-16')), 1, { kg: 45, wdh: 3 }, am('2026-11-16', '18:05'));
+  const l = letzteWerte([laufend, verworfen, ohne, alt, neu], 'bankdruecken', laufend.id);
+  assert.equal(l.datum, '2026-11-05');
+  assert.deepEqual(l.saetze.map((s) => [s.kg, s.wdh]), [[42.5, 8], [42.5, 7]]);
+  assert.equal(letzteWerte([alt], 'goblet-squat'), null);
 });
 
 // ---------- a) Vorbelegung (die Grundlage für „höchstens 2 Taps“) ----------

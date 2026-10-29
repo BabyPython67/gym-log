@@ -296,7 +296,7 @@ test('m) Programm in App und Repo gleichzeitig geändert: App zeigt den Untersch
 
 // ---------- n) Tastengröße ----------
 
-test('n) alle Tasten auf allen Bildschirmen sind mindestens 44 × 44 CSS-Pixel groß', async () => {
+test('n) alle Tasten auf allen Bildschirmen sind mindestens 44 × 44 CSS-Pixel groß', async (t) => {
   const mock = erstelleGithubMock();
   mock.schreibe({ 'garmin/stand.md': 'x\n' });
   let zustand = await imRepoSynchronisiert(mock, historie());
@@ -305,39 +305,109 @@ test('n) alle Tasten auf allen Bildschirmen sind mindestens 44 × 44 CSS-Pixel g
   const { seite, kontext } = await neueSeite({ zustand, einstellungen: TOKEN_EINSTELLUNGEN, mock, zeit: '2026-11-05T18:00:00' });
   await seite.waitForSelector('a.banner');
   const basis = seite.url().split('#')[0];
-  const zuKlein = [];
-  let geprueft = 0;
-  async function pruefe(name) {
-    await seite.waitForTimeout(50);
-    for (const t of await tastenGroessen(seite)) {
-      geprueft += 1;
-      if (t.b < 44 || t.h < 44) zuKlein.push(`${name}: „${t.text}“ ${t.b}×${t.h}`);
-    }
-  }
-  await pruefe('Start');
-  await seite.tap('[data-a="starten"]');
-  await seite.waitForSelector('.seite.uebung');
-  await pruefe('Übung');
-  await seite.tap('[data-testid="satz-speichern"]');
-  await pruefe('Übung mit Satz und Toast');
-  await seite.tap('[data-a="satzBearbeiten"][data-j="0"]');
-  await pruefe('Satz ändern');
-  await seite.tap('[data-a="bearbeitenAbbrechen"]');
-  await seite.tap('[data-testid="satz-speichern"]');
-  await pruefe('Übung erledigt');
-  await seite.tap('.kopf [data-a="menue"]');
-  await pruefe('Blatt Optionen');
-  await seite.tap('[data-a="ersetzenOeffnen"]');
-  await pruefe('Blatt Ersetzen');
-  await seite.fill('.suche', 'Neue Maschine');
-  await pruefe('Blatt Ersetzen mit neuer Übung');
-  for (const ziel of ['einheit', 'programm', 'programm/a', 'programm/a-kurz', 'katalog/goblet-squat', 'katalog/plank', 'phase/aufbau', 'rotation', 'einstellungen', 'konflikt']) {
+  const geh = async (ziel) => {
     await seite.goto(`${basis}#/${ziel}`);
     await seite.waitForSelector('#app .seite');
-    if (ziel === 'programm') await seite.tap('details.archiv summary');
-    await pruefe(ziel);
+  };
+  const blattZu = () => seite.tap('.blatt-kopf [data-a="blattZu"]');
+  const bildschirme = new Map();
+  const zuKlein = [];
+  let kleinste = Infinity;
+  async function pruefe(name) {
+    await seite.waitForTimeout(50);
+    const tasten = await tastenGroessen(seite);
+    for (const x of tasten) {
+      kleinste = Math.min(kleinste, x.b, x.h);
+      if (x.b < 44 || x.h < 44) zuKlein.push(`${name}: „${x.text}“ ${x.b}×${x.h}`);
+    }
+    bildschirme.set(name, tasten.length);
+    t.diagnostic(`${name}: ${tasten.length} Tasten geprüft`);
   }
-  assert.ok(geprueft > 150, `nur ${geprueft} Elemente geprüft`);
+
+  // Start und Training
+  await pruefe('start (Konflikt-Hinweis, Auswahl, Sync-Zeile)');
+  await seite.tap('[data-a="starten"]');
+  await seite.waitForSelector('.seite.uebung');
+  await pruefe('uebung (Satz 1, Gewicht × Wdh., Varianten)');
+  await seite.tap('[data-testid="satz-speichern"]');
+  await pruefe('uebung (Satz 2, Toast mit Rückgängig)');
+  await seite.tap('[data-a="satzBearbeiten"][data-j="0"]');
+  await pruefe('uebung (Satz ändern/löschen)');
+  await seite.tap('[data-a="bearbeitenAbbrechen"]');
+  await seite.tap('[data-testid="satz-speichern"]');
+  await pruefe('uebung (erledigt: Weiter / Noch ein Satz)');
+  await seite.tap('[data-a="extraSatz"]');
+  await pruefe('uebung (zusätzlicher Satz)');
+  await seite.tap('.kopf [data-a="menue"]');
+  await pruefe('blatt menue (Variante, ersetzen, auslassen)');
+  await seite.tap('[data-a="ersetzenOeffnen"]');
+  await pruefe('blatt ersetzen (Katalog)');
+  await seite.fill('.suche', 'Neue Maschine');
+  await pruefe('blatt ersetzen (neue Übung anlegen)');
+  await blattZu();
+  await geh('uebung/5');
+  await pruefe('uebung (ein Messfeld: Zeit)');
+  await geh('einheit');
+  await pruefe('einheit (Übersicht)');
+  await seite.tap('[data-a="menue"][data-i="4"]');
+  await seite.tap('[data-a="auslassen"]');
+  await geh('uebung/4');
+  await pruefe('uebung (ausgelassen: Doch machen)');
+  await geh('start');
+  await pruefe('start (laufende Einheit)');
+
+  // Programm bearbeiten
+  await geh('programm');
+  await seite.tap('details.archiv summary');
+  await pruefe('programm (Übersicht mit Archiv)');
+  await geh('programm/a');
+  await pruefe('programm/a (Plätze, Varianten)');
+  await seite.tap('[data-a="waehlen"][data-zweck="platz"]');
+  await pruefe('blatt platz (Übung hinzufügen)');
+  await blattZu();
+  await seite.tap('[data-a="waehlen"][data-zweck="variante"][data-i="0"]');
+  await pruefe('blatt variante (Variante hinzufügen)');
+  await blattZu();
+  await geh('programm/a-kurz');
+  await pruefe('programm/a-kurz (Kurzfassung)');
+  await geh('programm');
+  await seite.fill('[data-form="neuesProgramm"] input', 'D');
+  await seite.tap('[data-form="neuesProgramm"] button');
+  await seite.waitForURL(/#\/programm\/d$/);
+  await pruefe('programm/d (neu, leer)');
+  for (const [ziel, name] of [['katalog/goblet-squat', 'Gewicht × Wdh.'], ['katalog/klimmzuege', 'Wdh.'], ['katalog/plank', 'Zeit, archiviert']]) {
+    await geh(ziel);
+    await pruefe(`${ziel} (${name})`);
+  }
+  await geh('phase/aufbau');
+  await pruefe('phase/aufbau (mit Datum)');
+  await geh('phase/steigern');
+  await pruefe('phase/steigern (ohne Datum)');
+  await geh('rotation');
+  await pruefe('rotation');
+
+  // Einstellungen und Konflikt
+  await geh('einstellungen');
+  await pruefe('einstellungen (mit Token)');
+  await geh('konflikt');
+  await pruefe('konflikt (zwei Fassungen)');
+  await seite.tap('[data-testid="konflikt-repo"]');
+  await geh('konflikt');
+  await pruefe('konflikt (aufgelöst)');
+  await geh('einstellungen');
+  await seite.tap('[data-a="tokenEntfernen"]');
+  await pruefe('einstellungen (ohne Token)');
+  await geh('start');
+  await pruefe('start (ohne Token)');
+
+  // Vollständig: jede Route des Routers (zeichne() in app.js) und jede Blattart
+  const namen = [...bildschirme.keys()];
+  for (const route of ['start', 'einheit', 'uebung', 'programm', 'katalog', 'phase', 'rotation', 'einstellungen', 'konflikt', 'blatt menue', 'blatt ersetzen', 'blatt platz', 'blatt variante']) {
+    assert.ok(namen.some((n) => n.startsWith(route)), `Bildschirm ${route} nicht geprüft`);
+  }
+  const geprueft = [...bildschirme.values()].reduce((a, b) => a + b, 0);
+  t.diagnostic(`${bildschirme.size} Bildschirme/Zustände, ${geprueft} Tasten, kleinste Kante ${kleinste} CSS-Pixel`);
+  assert.ok(geprueft > 300, `nur ${geprueft} Tasten geprüft`);
   assert.deepEqual(zuKlein, []);
   await kontext.close();
 });
